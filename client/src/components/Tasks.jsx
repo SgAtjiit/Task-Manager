@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 
 const Tasks = () => {
     const [date, setDate] = useState('');
@@ -58,6 +58,26 @@ const Tasks = () => {
         localStorage.setItem('tasks', JSON.stringify(newAllTasks));
         setTasks(updatedTasksForDate);
     }
+    const updateTasksArray = (updatedTasks) => {
+        const allTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        const newAllTasks = allTasks.filter(task => task.date !== date);
+        localStorage.setItem('tasks', JSON.stringify([...newAllTasks, ...updatedTasks]));
+        setTasks(updatedTasks);
+    }
+
+    useEffect(() => {
+        if(!date){
+            const storedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        const today = new Date().toISOString().split('T')[0];
+        const taskForToday = storedTasks.filter(task => task.date === today);
+        
+            setDate(today);
+            setTasks(taskForToday);
+            setSubmitted(true);
+            calcDayRating(taskForToday);
+        
+        }
+    }, [date]);
 
     return (
         <div className="min-h-screen bg-gray-900 text-gray-100 py-8 px-4 text-white">
@@ -131,6 +151,17 @@ const Tasks = () => {
                                     />
                                 </p>
                             </div>
+                            <button
+                                className="mt-4 md:mt-0 md:ml-4 bg-blue-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow transition font-bold"
+                                onClick={() => {
+                                    const updatedTasks = tasks.filter(t => t.id !== task.id);
+                                    setTasks(updatedTasks);
+                                    updateTasksArray(updatedTasks);
+                                    calcDayRating(updatedTasks);
+                                }}
+                            >
+                                Delete
+                            </button>
                         </li>
                     ))}
                 </ul>
